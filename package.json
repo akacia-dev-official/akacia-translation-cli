@@ -1,0 +1,15 @@
+{
+	"name": "translator",
+	"version": "1.0.0",
+	"description": "Tool to translate json content via API",
+	"main": "index.ts",
+	"scripts": {
+		"start": "tsx index.ts"
+	},
+	"author": "Nassim El Khantour",
+	"license": "ISC",
+	"devDependencies": {
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	}
+}
