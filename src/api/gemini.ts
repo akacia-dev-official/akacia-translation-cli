@@ -1,6 +1,5 @@
 export async function Gemini(content: string) {
 
-
 	const PROMPT = `${content}`;
 
 	if (!process.env.GEMINI_API_KEY)

@@ -6,6 +6,8 @@ export class APIManager {
 
 	async call(method: Method, strings: string[], locale: string, characterLimit: number = 0): Promise<string[]> {
 
+		console.log(method);
+
 		switch (method) {
 
 			case "GEMINI":

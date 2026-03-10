@@ -23,6 +23,8 @@ export class ArgsManager {
 	d: Boolean;
 	// Override and retranslate already translated keys in the target file 
 	o: Boolean;
+	// Skip cache checking
+	c: Boolean;
 
 	constructor() {
 		this.locale = Object.keys(LOCALES)[0] as keyof typeof LOCALES;
@@ -33,6 +35,7 @@ export class ArgsManager {
 		this.v = false;
 		this.d = false;
 		this.o = false;
+		this.c = false;
 		this.maxChar = 0;
 	}
 
@@ -134,6 +137,7 @@ export class ArgsManager {
 			["Verbose"]: this.v,
 			["Dry Run"]: this.d,
 			["Override"]: this.o,
+			["Skip Cache"]: this.c,
 		});
 
 	}
@@ -155,5 +159,8 @@ export class ArgsManager {
 		return this.o;
 	}
 
+	get skipCache() {
+		return this.c;
+	}
 
 }

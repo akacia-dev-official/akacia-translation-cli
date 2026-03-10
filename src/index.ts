@@ -24,9 +24,9 @@ const logger = new Logger();
 const args = new ArgsManager();
 
 /**
-		Filter out the (flattened) keys that already exists so we don't translate them twice.
+ * Filter out the (flattened) keys that already exists so we don't translate them twice.
  */
-function prepareBatch(flatSource: Dico, flatTarget: Dico, cache: Cache, override: Boolean) {
+function prepareBatch(flatSource: Dico, flatTarget: Dico, cache?: Cache, override: Boolean = false) {
 
 	const filteredSource = jsonProcessor.filter(flatSource, TRANSLATION_FILTERS);
 
@@ -47,10 +47,12 @@ function prepareBatch(flatSource: Dico, flatTarget: Dico, cache: Cache, override
 		const value = filteredSource[key as keyof typeof filteredSource];
 
 		// continue is exists in cache
-		const cachedValue = cache.find(args.locale, String(value));
-		if (cachedValue) {
-			flatTarget[key as keyof typeof flatTarget] = cachedValue;
-			continue;
+		if (cache) {
+			const cachedValue = cache.find(args.locale, String(value));
+			if (cachedValue) {
+				flatTarget[key as keyof typeof flatTarget] = cachedValue;
+				continue;
+			}
 		}
 
 		const protectedText = typeof value === "string" ? jsonProcessor.protectVariables(value, [REGEXP_VARIABLE, REGEXP_PROTECTED]) : value;
@@ -65,7 +67,7 @@ function prepareBatch(flatSource: Dico, flatTarget: Dico, cache: Cache, override
 
 async function translateBatch(
 	{ toTranslate, flatTarget, cache, }:
-		{ toTranslate: Dico, flatTarget: Dico, cache: Cache }, args: ArgsManager) {
+		{ toTranslate: Dico, flatTarget: Dico, cache?: Cache }, args: ArgsManager) {
 
 	const keys = Object.keys(toTranslate);
 	for (let i = 0; i < keys.length; i += BATCH_SIZE) {
@@ -85,7 +87,8 @@ async function translateBatch(
 			const restored = jsonProcessor.restoreVariables(t, index);
 			flatTarget[key] = restored;
 
-			cache.insert(args.locale, String(sourceText), restored);
+			if (cache)
+				cache.insert(args.locale, String(sourceText), restored);
 
 
 			if (args.log)
@@ -119,17 +122,20 @@ async function processLocale(file: string, args: ArgsManager) {
 		return console.error(`Unable to read the target file: "${targetPath}". Skipping.`);
 
 	const flatTarget = jsonProcessor.flatten(targetJson);
-	await cache.load(args.locale);
 
-	const toTranslate = prepareBatch(flatSource, flatTarget, cache, args.override);
+	if (!args.skipCache)
+		await cache.load(args.locale);
+
+	const toTranslate = prepareBatch(flatSource, flatTarget, args.skipCache ? undefined : cache, args.override);
 
 	await translateBatch({
 		toTranslate,
 		flatTarget,
-		cache,
+		cache: args.skipCache ? undefined : cache,
 	}, args);
 
-	await cache.save(args.locale);
+	if (!args.skipCache)
+		await cache.save(args.locale);
 
 	const rebuilt = jsonProcessor.unflatten(flatTarget);
 
@@ -180,7 +186,8 @@ async function main() {
 
 	console.log('------------------------------------------');
 	console.log(`Total characters translated: ${logger.charactersCount}`);
-	console.log(`Cache was hit ${cache.stat.hit} times and saved ${cache.stat.characters} characters`);
+	if (!args.skipCache)
+		console.log(`Cache was hit ${cache.stat.hit} times and saved ${cache.stat.characters} characters`);
 }
 
 main();
