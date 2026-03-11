@@ -110,22 +110,22 @@ example/en-US/input.json,120,36,84,2431,gemini
 ## Example
 
 Input:
-
+```
 example/
 └─ en-US/
 └─ input.json
-
+```
 Command:
 ```
 npm run start -- --locale=zh-TW --input=./example/en-US --output=./example --api=gemini
 ```
 Output:
-
+```
 example/
 ├─ en-US/
 └─ zh-TW/
 └─ input.json
-
+```
 ---
 
 ## License
