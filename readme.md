@@ -90,8 +90,8 @@ Logs are written in two formats:
 
 Example structure:
 
-logs/
-session-AAAAMMDDHHMMSS.log
+logs/  
+session-AAAAMMDDHHMMSS.log  
 session-AAAAMMDDHHMMSS.csv
 
 The CSV file can be used for:
@@ -100,9 +100,8 @@ The CSV file can be used for:
 - translation analytics
 - reporting
 
-Example CSV:
-
-file,strings,translated,cached,characters,api
+Example CSV:  
+file,strings,translated,cached,characters,api  
 example/en-US/input.json,120,36,84,2431,gemini
 
 ---
