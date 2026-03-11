@@ -1,37 +1,60 @@
 import { Method } from "../types";
+import { Gemini } from "./gemini";
 
 export class APIManager {
 
 	#characterCount = 0;
 
+	cutByCharacterLimit(
+		items: string[],
+		characterCount: number,
+		characterLimit: number
+	): string[] {
+
+		const result: string[] = [];
+		let count = characterCount;
+
+		for (const word of items) {
+			const length = word.length;
+
+			if (count + length > characterLimit) {
+				break;
+			}
+
+			result.push(word);
+			count += length;
+		}
+
+		return result;
+	}
+
 	async call(method: Method, strings: string[], locale: string, characterLimit: number = 0): Promise<string[]> {
 
-		console.log(method);
+		console.log({ method, strings, locale });
+
+		if (characterLimit)
+			strings = this.cutByCharacterLimit(strings, this.#characterCount, characterLimit);
+
+		let result;
 
 		switch (method) {
 
 			case "GEMINI":
-
-				const prompt = `
-Translate the following UI strings from English to ${locale}.
-Return ONLY a JSON array in the same order.
-
-${JSON.stringify(strings)}
-`;
-
-				// TODO: replace with real API call
-				console.log("Calling Gemini...");
-				return strings.map((s) => `[${locale}] ${s}`);
+				result = await Gemini(locale, strings);
+				break;
 
 			case "GOOGLE_TRANSLATE":
-				// TODO: replace with real API call
-				console.log("Calling Google Translate...");
-				return strings.map((s) => `[${locale}] ${s}`);
+				result = strings;
+				break;
+
+			case "UNDEFINED":
+			default:
+				throw new Error("No translatio API methods were defined, make sure to use the --api=METHOD argument.");
 
 		}
 
-
-		return strings;
+		strings.forEach(string => this.#characterCount += string.length);
+		return result;
 
 	}
 

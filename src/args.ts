@@ -132,6 +132,7 @@ export class ArgsManager {
 			["Locale"]: this.locale,
 			["Input"]: this.input,
 			["Output"]: this.output,
+			["API"]: this.api,
 			["Characters Limit"]: this.maxChar,
 			["Logs"]: this.l,
 			["Verbose"]: this.v,

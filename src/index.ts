@@ -14,6 +14,7 @@ import { Dico } from "./types";
 import { getJsonFiles, getTargetPath, readOrCreateFile } from "./utils";
 import { ArgsManager } from "./args";
 
+import dotenv from "dotenv";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
@@ -22,6 +23,8 @@ const apiManager = new APIManager();
 const jsonProcessor = new JSONProcessor();
 const logger = new Logger();
 const args = new ArgsManager();
+
+dotenv.config();
 
 /**
  * Filter out the (flattened) keys that already exists so we don't translate them twice.
