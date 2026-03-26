@@ -62,8 +62,8 @@ npm run start -- \
 | --locale | Target locale (**BCP 47 format**, e.g. `en-US`, `fr-FR`, `zh-TW`) |
 | --input | Path to JSON file or directory to translate |
 | --output | Output directory (created if missing) |
-| --maxChar | Character translation limit (`0` = unlimited) |
-| --api | Translation provider (`GEMINI`, `GOOGLE_TRANSLATE`, `DEEPL`) |
+| --maxchar | Character translation limit (`0` = unlimited) |
+| --api | Translation provider (`GEMINI`, `GOOGLE_CLOUD`, `DEEPL`, `LIBRE_TRANSLATE`) |
 | -l | Enable logs |
 | -v | Verbose output |
 | -d | Dry run (no API calls) |

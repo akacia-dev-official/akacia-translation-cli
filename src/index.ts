@@ -81,7 +81,7 @@ async function translateBatch(
 		const batchValues = batchKeys.map(k => toTranslate[k]) as string[];
 
 		// call API with batch of strings
-		const translated = await apiManager.call(args.api, batchValues, args.locale, args.maxChar);
+		const translated = await apiManager.call(args.api, batchValues, args.locale, args.maxchar);
 
 		translated.forEach((t, index) => {
 			const key = batchKeys[index];

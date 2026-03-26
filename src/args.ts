@@ -12,7 +12,7 @@ export class ArgsManager {
 	output: string;
 	// Characters limit, stop the program if the translated character counts overlap the limit
 	// Set to 0 for no limits
-	maxChar: number;
+	maxchar: number;
 	/// API method to use to translate (Gemini, Google Translate)
 	api: Method;
 	// Enable logs
@@ -36,7 +36,7 @@ export class ArgsManager {
 		this.d = false;
 		this.o = false;
 		this.c = false;
-		this.maxChar = 0;
+		this.maxchar = 0;
 	}
 
 	isObjectKey(key: string) {
@@ -133,7 +133,7 @@ export class ArgsManager {
 			["Input"]: this.input,
 			["Output"]: this.output,
 			["API"]: this.api,
-			["Characters Limit"]: this.maxChar,
+			["Characters Limit"]: this.maxchar,
 			["Logs"]: this.l,
 			["Verbose"]: this.v,
 			["Dry Run"]: this.d,

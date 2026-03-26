@@ -1,37 +1,37 @@
 {
   "home": {
-    "label": "首頁",
+    "label": "內容",
     "header": {
-      "title": "瀏覽最新網頁設計工具",
-      "subtitle": "使用豐富的設計工具來改進並簡化您的工作流程"
+      "title": "瀏覽最新 Web 設計工具",
+      "subtitle": "使用繁多的設計工具改善和放宽工作流程"
     }
   },
   "templates": {
     "label": "模板",
     "header": {
       "title": "模板",
-      "subtitle": "最新的文件，助您開始新的設計專案或下次簡報"
+      "subtitle": "要啟動您新設計專案或下一個演示文稿的最新文件"
     }
   },
   "modules": {
     "label": "模組",
     "header": {
       "title": "模組",
-      "subtitle": "匯集各種引人入勝視覺效果的互動式函式庫"
+      "subtitle": "互動式圖書館集聚各种相關影像效果"
     }
   },
   "documents": {
     "label": "文件",
     "header": {
       "title": "文件",
-      "subtitle": "所有對您的專案開發有用的文件"
+      "subtitle": "所有對您的專案發展有用的文件"
     }
   },
   "plugins": {
-    "label": "外掛程式",
+    "label": "插件",
     "header": {
-      "title": "外掛程式",
-      "subtitle": "有用的外掛程式可激發您的創造力"
+      "title": "插件",
+      "subtitle": "增加你創意的有用插件"
     }
   }
 }

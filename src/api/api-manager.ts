@@ -1,5 +1,6 @@
 import { Method } from "../types";
 import { Gemini } from "./gemini";
+import LibreTranslate from "./libre-translate";
 
 export class APIManager {
 
@@ -36,15 +37,18 @@ export class APIManager {
 			strings = this.cutByCharacterLimit(strings, this.#characterCount, characterLimit);
 
 		let result;
-
 		switch (method) {
 
 			case "GEMINI":
 				result = await Gemini(locale, strings);
 				break;
 
-			case "GOOGLE_TRANSLATE":
+			case "GOOGLE_CLOUD":
 				result = strings;
+				break;
+
+			case "LIBRE_TRANSLATE":
+				result = await LibreTranslate(locale, strings);
 				break;
 
 			case "UNDEFINED":

@@ -1,5 +1,5 @@
 
-export type Method = "UNDEFINED" | "GEMINI" | "GOOGLE_TRANSLATE";
+export type Method = "UNDEFINED" | "GEMINI" | "GOOGLE_CLOUD" | "LIBRE_TRANSLATE";
 
 export type StringDico = Record<string, string>;
 export type Dico = Record<string, string | number>;
@@ -25,3 +25,5 @@ interface RecordFilterListRules {
 };
 
 export type RecordFilter = RecordFilterPresetRules | RecordFilterCustomRules | RecordFilterListRules;
+
+export type APIMethodFn = (locale: string, strings: string[], attempt: number) => Promise<string[]>;

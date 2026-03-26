@@ -65,6 +65,7 @@ ${JSON.stringify(strings)}
 	const text =
 		data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text);
 
+	// DELETEME
 	console.log("\nGenerated text:\n", text.join("") ?? "");
 
 	try {

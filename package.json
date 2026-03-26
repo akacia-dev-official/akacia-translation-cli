@@ -5,7 +5,7 @@
 	"main": "index.ts",
 	"scripts": {
 		"start": "tsx src/index.ts",
-		"example": "tsx src/index.ts -l --locale=zh-TW --input=./example/en-US/ --output=./example/"
+		"example": "tsx src/index.ts -l --input=./example/en-US/ --output=./example/"
 	},
 	"author": "Nassim El Khantour",
 	"license": "ISC",
