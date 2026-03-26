@@ -51,7 +51,7 @@ function prepareBatch(flatSource: Dico, flatTarget: Dico, cache?: Cache, overrid
 
 		// continue is exists in cache
 		if (cache) {
-			const cachedValue = cache.find(args.locale, String(value));
+			const cachedValue = cache.find(args.targetLocale, String(value));
 			if (cachedValue) {
 				flatTarget[key as keyof typeof flatTarget] = cachedValue;
 				continue;
@@ -81,7 +81,7 @@ async function translateBatch(
 		const batchValues = batchKeys.map(k => toTranslate[k]) as string[];
 
 		// call API with batch of strings
-		const translated = await apiManager.call(args.api, batchValues, args.locale, args.maxchar);
+		const translated = await apiManager.call(args.api, batchValues, args.targetLocale, args.maxChar);
 
 		translated.forEach((t, index) => {
 			const key = batchKeys[index];
@@ -91,11 +91,11 @@ async function translateBatch(
 			flatTarget[key] = restored;
 
 			if (cache)
-				cache.insert(args.locale, String(sourceText), restored);
+				cache.insert(args.targetLocale, String(sourceText), restored);
 
 
 			if (args.log)
-				logger.push(args.locale, String(sourceText), String(restored));
+				logger.push(args.targetLocale, String(sourceText), String(restored));
 		});
 	}
 
@@ -127,7 +127,7 @@ async function processLocale(file: string, args: ArgsManager) {
 	const flatTarget = jsonProcessor.flatten(targetJson);
 
 	if (!args.skipCache)
-		await cache.load(args.locale);
+		await cache.load(args.targetLocale);
 
 	const toTranslate = prepareBatch(flatSource, flatTarget, args.skipCache ? undefined : cache, args.override);
 
@@ -138,13 +138,14 @@ async function processLocale(file: string, args: ArgsManager) {
 	}, args);
 
 	if (!args.skipCache)
-		await cache.save(args.locale);
+		await cache.save(args.targetLocale);
 
 	const rebuilt = jsonProcessor.unflatten(flatTarget);
 
 	await fs.mkdir(path.dirname(targetPath), { recursive: true });
 	await fs.writeFile(targetPath, JSON.stringify(rebuilt, null, 2));
 
+	console.log(`Translated file ${targetPath}`);
 }
 
 

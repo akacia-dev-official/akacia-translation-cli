@@ -24,7 +24,7 @@ export async function getJsonFiles(dir: string): Promise<string[]> {
 
 
 
-export async function getTargetPath(file: string, args: { input: string; output: string; locale: string }): Promise<string> {
+export async function getTargetPath(file: string, args: { input: string; output: string; targetLocale: string }): Promise<string> {
 	const inputPath = path.resolve(args.input);
 	const filePath = path.resolve(file);
 	const outputRoot = path.resolve(args.output);
@@ -39,7 +39,7 @@ export async function getTargetPath(file: string, args: { input: string; output:
 
 	const relativePath = path.relative(sourceLocaleRoot, filePath);
 
-	return path.join(outputRoot, args.locale, relativePath);
+	return path.join(outputRoot, args.targetLocale, relativePath);
 }
 
 

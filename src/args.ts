@@ -4,15 +4,17 @@ import fs from "fs/promises";
 
 export class ArgsManager {
 
+	// define original file locale (en-US, fr-FR, zh-TW)
+	sourceLocale: keyof typeof LOCALES;
 	// define locale to translate to (en-US, fr-FR, zh-TW)
-	locale: keyof typeof LOCALES;
+	targetLocale: keyof typeof LOCALES;
 	// The path to the file or directory to translate (only JSON)
 	input: string;
 	// The output directory (creates a new one if doesn't exists)
 	output: string;
 	// Characters limit, stop the program if the translated character counts overlap the limit
 	// Set to 0 for no limits
-	maxchar: number;
+	maxChar: number;
 	/// API method to use to translate (Gemini, Google Translate)
 	api: Method;
 	// Enable logs
@@ -27,7 +29,8 @@ export class ArgsManager {
 	c: Boolean;
 
 	constructor() {
-		this.locale = Object.keys(LOCALES)[0] as keyof typeof LOCALES;
+		this.sourceLocale = Object.keys(LOCALES)[0] as keyof typeof LOCALES;
+		this.targetLocale = this.sourceLocale;
 		this.input = "";
 		this.output = "";
 		this.api = "UNDEFINED";
@@ -36,7 +39,7 @@ export class ArgsManager {
 		this.d = false;
 		this.o = false;
 		this.c = false;
-		this.maxchar = 0;
+		this.maxChar = 0;
 	}
 
 	isObjectKey(key: string) {
@@ -101,7 +104,11 @@ export class ArgsManager {
 
 	async validate() {
 
-		this.locale = this.#validateLocale(this.locale) as keyof typeof LOCALES;
+		this.targetLocale = this.#validateLocale(this.targetLocale) as keyof typeof LOCALES;
+		this.sourceLocale = this.#validateLocale(this.sourceLocale) as keyof typeof LOCALES;
+
+		if (this.targetLocale === this.sourceLocale)
+			throw new Error("Your source locale matches your target locale. Make sure to set a target language different from your source language using the argument --targetLocale");
 
 		if (!this.input || !this.input.length)
 			throw new Error("No folder or file where input, make sure to use the argument --input=FILE_PATH|DIR_PATH.");;
@@ -113,6 +120,7 @@ export class ArgsManager {
 		const inputType = await this.getInputType();
 		if (inputType === "INVALID")
 			throw new Error(`The provided input "${this.input}" is neither a file nor a directory.`);
+
 	}
 
 	async getInputType(): Promise<"FILE" | "DIR" | "INVALID"> {
@@ -129,11 +137,12 @@ export class ArgsManager {
 	print() {
 
 		console.table({
-			["Locale"]: this.locale,
+			["Source Locale"]: this.sourceLocale,
+			["Target Locale"]: this.targetLocale,
 			["Input"]: this.input,
 			["Output"]: this.output,
 			["API"]: this.api,
-			["Characters Limit"]: this.maxchar,
+			["Characters Limit"]: this.maxChar,
 			["Logs"]: this.l,
 			["Verbose"]: this.v,
 			["Dry Run"]: this.d,

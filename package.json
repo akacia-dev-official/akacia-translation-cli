@@ -5,6 +5,7 @@
 	"main": "index.ts",
 	"scripts": {
 		"start": "tsx src/index.ts",
+		"libre": "pipenv run libretranslate --load-only en,fr,zt --host 127.0.0.1 --port 5000",
 		"example": "tsx src/index.ts -l --input=./example/en-US/ --output=./example/"
 	},
 	"author": "Nassim El Khantour",
