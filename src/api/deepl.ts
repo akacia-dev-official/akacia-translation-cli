@@ -12,7 +12,7 @@ const DEEPL_LOCALES_MAP: Partial<Record<keyof typeof LOCALES, deepl.TargetLangua
 	"fr-CA": "fr",
 	"zh-TW": "zh-HANT",
 	"th-TH": "th",
-};
+}
 
 
 

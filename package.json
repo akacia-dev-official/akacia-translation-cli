@@ -5,8 +5,9 @@
 	"main": "index.ts",
 	"scripts": {
 		"start": "tsx src/index.ts",
-		"libre": "pipenv run libretranslate --load-only en,fr,zt --host 127.0.0.1 --port 5000",
-		"example": "tsx src/index.ts -l --input=./example/article/en-US/ --output=./example/article/"
+		"libre": "pipenv run libretranslate --load-only en,fr,zt,ms --host 127.0.0.1 --port 5000",
+		"example": "tsx src/index.ts -l --input=./example/article/en-US/ --output=./example/article/",
+		"benchmark": "tsx src/index.ts -l -d -c -o --targetLocale=zh-TW --input=./example/benchmark/1024/en-US/ --output=./example/benchmark/1024/"
 	},
 	"author": "Nassim El Khantour",
 	"license": "ISC",

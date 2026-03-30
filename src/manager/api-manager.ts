@@ -1,10 +1,10 @@
 import { APIMethodFn, Method } from "../types";
 
 // Loading APIs Methods
-import { Gemini } from "./gemini";
-import { LibreTranslate } from "./libre-translate";
-import { Deepl } from "./deepl";
-import { GoogleCloud } from "./google-cloud";
+import { Gemini } from "../api/gemini";
+import { LibreTranslate } from "../api/libre-translate";
+import { Deepl } from "../api/deepl";
+import { GoogleCloud } from "../api/google-cloud";
 
 const METHOD_CALLBACK_UNDEFINED: APIMethodFn = async (_locale, _strings, _attempt) => {
 	throw new Error("No valid translation API methods were defined, make sure to use the --api=METHOD argument.");

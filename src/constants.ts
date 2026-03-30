@@ -80,6 +80,10 @@ export const LOCALES = {
 	"vi-VN": { language: "Vietnamese", region: "Vietnam" },
 	"id-ID": { language: "Indonesian", region: "Indonesia" },
 
+	"ms-MY": { language: "Malay", region: "Malaysia" },
+	"ms-SG": { language: "Malay", region: "Singapore" },
+	"ms-BN": { language: "Malay", region: "Brunei" },
+
 	"zh-CN": { language: "Chinese", region: "China (Simplified)" },
 	"zh-TW": { language: "Chinese", region: "Taiwan (Traditional)" },
 	"zh-HK": { language: "Chinese", region: "Hong Kong (Traditional)" },

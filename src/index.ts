@@ -8,7 +8,7 @@ import {
 } from "./constants";
 import { Cache } from "./cache";
 import { JSONProcessor, } from "./json-processor";
-import { APIManager } from "./api/api-manager";
+import { APIManager } from "./manager/api-manager";
 import { Logger } from "./logger";
 import { Dico } from "./types";
 import { getJsonFiles, getTargetPath, readOrCreateFile } from "./utils";
@@ -29,9 +29,10 @@ const timer = new Timer();
 
 dotenv.config();
 
+
 /**
- * Filter out the (flattened) keys that already exists so we don't translate them twice.
- */
+* Filter out the (flattened) keys that already exists so we don't translate them twice.
+*/
 function prepareBatch(flatSource: Dico, flatTarget: Dico, cache?: Cache, override: Boolean = false) {
 
 	const filteredSource = jsonProcessor.filter(flatSource, TRANSLATION_FILTERS);
@@ -71,6 +72,8 @@ function prepareBatch(flatSource: Dico, flatTarget: Dico, cache?: Cache, overrid
 
 }
 
+
+
 async function translateBatch(
 	{ toTranslate, flatTarget, cache, }:
 		{ toTranslate: Dico, flatTarget: Dico, cache?: Cache }, args: ArgsManager) {
@@ -82,6 +85,13 @@ async function translateBatch(
 
 		// get the batch of values to translate
 		const batchValues = batchKeys.map(k => toTranslate[k]) as string[];
+
+		// if Dry Run Mode, don't do any API call and output batch keys.
+		if (args.dryRun) {
+			console.log(`Batch ${i}:\n ${batchValues}`);
+			continue;
+		}
+
 
 		// call API with batch of strings
 		const translated = await apiManager.call(args.api, batchValues, args.targetLocale, args.maxChar);
