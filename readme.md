@@ -48,10 +48,13 @@ npm run start -- [arguments]
 Example:
 ```
 npm run start -- \
---locale=zh-TW \
+--target-locale=zh-TW \
 --input=./example/en-US \
 --output=./example \
---api=gemini
+--api=gemini \
+-log \
+-verbose \
+-skip-cache
 ```
 ---
 
@@ -70,7 +73,8 @@ npm run start -- \
 | -dry-run | Dry run (no API calls) |
 | -override | Override already translated values |
 | -skip-cache | Skip cache checking |
-| -skip-str-split | Skip splitting string into smaller chunks based on their punctuation. |
+| -skip-spltr-str | Entierly skip splitting string into smaller chunks for all punctuations (strong + weak). |
+| -skip-split-str-weak | Skip splitting string into smaller chunks for weak punctuation only. |
 
 ---
 
