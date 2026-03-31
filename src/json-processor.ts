@@ -1,32 +1,92 @@
-import { KEY_SPLIT_CHAR } from "./constants";
+import {
+	KEY_SPLIT_LEVEL,
+	KEY_SPLIT_STRING,
+	REGEX_STRING_INDEX,
+	REGEXP_SPLIT_STRONG_PUNCTUATION,
+	REGEXP_SPLIT_WEAK_PUNCTUATION,
+	SPLIT_COMMA_LENGTH_LIMIT,
+	SPLIT_STRING_MIN_LENGTH
+} from "./constants";
 import { Dico, RecordFilter } from "./types";
+
+export const JSON_PROCESSOR_NO_PREFIX = "";
 
 export class JSONProcessor {
 
 	varsMap: string[][] = [];
 
 
-	/**
-	Flatten the json structure:
+	splitString(text: string): string[] {
+		return text
+			.split(REGEXP_SPLIT_STRONG_PUNCTUATION) // split strong punctuation + newline
+			.flatMap(sentence => {
+				// split long sentences by comma
+				if (sentence.length > SPLIT_COMMA_LENGTH_LIMIT)
+					return sentence.split(REGEXP_SPLIT_WEAK_PUNCTUATION);
 
-							 A: { B: { C: {} }}   ==>   ["A.B.C"]: 
- 
-	Flattening the JSON allows to standardize de overall data structure by simply working with a 1 level structure and ensure:
-	- Easier batching
-	- Cache checking
-	- Faster to check in the target file the key is missing of not.
-	
-	The json is then rebuilt in the unflaten method.
+				return [sentence];
+			})
+			.map(s => s.trim())
+			.filter(Boolean);
+	}
+
+	/**
+	 * Flatten the json structure:
+	 *
+	 *     A: { B: { C: {} }}   ==>   ["A/B/C"]: 
+	 *
+	 * Flattening the JSON allows to standardize de overall data structure by simply working
+	 * with a 1 level structure and ensure:
+	 * - Easier batching
+	 * - Cache checking
+	 * - Faster to check in the target file the key is missing of not.
+	 * 
+	 * The json is then rebuilt in the unflaten method.
+	 *
+	 * We also split strings by punctuation for better cache usage with smaller chunks
+	 * Overall Synthax:
+	 *
+	 * 1. Object levels are speratated by /
+	 *      A: { B: "Value" }         ==>  ["A/B"]: "Value"
+	 *
+	 * 2. Strings are segmented by #
+	 *      A: { B: "Start. End." }   ==>  ["A/B#0"]: "Start."
+	 *                                     ["A/B#1"]: "End."
+	 *
+	 *
 	 */
-	flatten(obj: any, prefix = "", res: Record<string, string | number> = {}) {
+	flatten(obj: any, prefix = JSON_PROCESSOR_NO_PREFIX, skipSplitString: Boolean = false, res: Record<string, string | number> = {}) {
+
 		for (const key in obj) {
 			const value = obj[key];
-			const newKey = prefix ? `${prefix}${KEY_SPLIT_CHAR}${key}` : key;
+			const newKey = prefix ? [prefix, key].join(KEY_SPLIT_LEVEL) : key;
 
-			if (value && typeof value === "object")
-				this.flatten(value, newKey, res);
-			else
+			if (value && typeof value === "object") {
+
+				this.flatten(value, newKey, skipSplitString, res);
+
+			} else if (value && typeof value == "string" && !skipSplitString) {
+
+				// Avoid splitting short string
+				if (value.length < SPLIT_STRING_MIN_LENGTH) {
+					res[newKey] = value;
+					continue;
+				}
+
+				const segments = this.splitString(value);
+
+				if (segments.length === 1) {
+					res[newKey] = value;
+				} else {
+					segments.forEach((segment, i) => {
+						res[[newKey, i].join(KEY_SPLIT_STRING)] = segment;
+					});
+				}
+
+			} else {
+				// split string ?
 				res[newKey] = value;
+			}
 
 		}
 
@@ -34,24 +94,23 @@ export class JSONProcessor {
 	}
 
 	/**
-  
-	Rebuild the flattened json after translation processed:
-	
-				 ["A.B.C"]   ==>   A: { B: { C: {} }}
-	
+	 * 
+	 * Rebuild the flattened json after translation processed:
+	 * 
+	 *        ["A.B.C"]   ==>   A: { B: { C: {} }}
+	 *
 	 */
-	unflatten(obj: Dico) {
+	private rebuildObjects(obj: Dico) {
 		const result: any = {};
 
 		for (const key in obj) {
-			const keys = key.split(KEY_SPLIT_CHAR);
+			const keys = key.split(KEY_SPLIT_LEVEL);
 			let current = result;
 
 			keys.forEach((k, i) => {
 				const isLast = i === keys.length - 1;
 				const nextKey = keys[i + 1];
 
-				// Detect if nextKey is a number => create array
 				const useArray = !isLast && /^\d+$/.test(nextKey);
 
 				if (isLast) {
@@ -68,9 +127,52 @@ export class JSONProcessor {
 		return this.convertNumericObjectsToArrays(result);
 	}
 
+
+
 	/**
-	* Recursively convert objects with numeric keys into arrays
-	*/
+	 * 
+	 * Concant and rebuild the flattened strings:
+	 * 
+	 *        ["A/B/#0"]: "Part A." 
+	 *        ["A/B/#1"]: "Part B."
+	 *        ==> "Part A. Part B."
+	 *
+	 */
+	private rebuildStrings(obj: Dico) {
+		const merged: Record<string, any> = {};
+
+		for (const key in obj) {
+			const match = key.match(REGEX_STRING_INDEX);
+
+			if (match) {
+				const base = match[1];
+				const index = Number(match[2]);
+
+				if (!merged[base]) merged[base] = [];
+				merged[base][index] = obj[key];
+			} else {
+				merged[key] = obj[key];
+			}
+		}
+
+		// join segmented strings
+		for (const key in merged) {
+			if (Array.isArray(merged[key])) {
+				merged[key] = merged[key].join(" ");
+			}
+		}
+
+		return merged;
+	}
+
+	unflatten(obj: Dico) {
+		const mergedStrings = this.rebuildStrings(obj);
+		return this.rebuildObjects(mergedStrings);
+	}
+
+	/**
+	 * Recursively convert objects with numeric keys into arrays
+	 */
 	private convertNumericObjectsToArrays(obj: any): any {
 		if (obj && typeof obj === "object") {
 			const keys = Object.keys(obj);
@@ -117,7 +219,7 @@ export class JSONProcessor {
 	}
 
 	/**
-	Restore the cached variables based on their index.
+	 * Restore the cached variables based on their index.
 	 */
 	restoreVariables(text: string, keyIndex: number) {
 		let restored = text;
@@ -130,6 +232,12 @@ export class JSONProcessor {
 	}
 
 
+	/**
+	 * Filter out the json object according to an array of filter.
+	 * Filters are fully configurable and can target either the key or the value it self.
+	 * We use a discriminator system by either filtering by PRESET with perset commands
+	 * or by using specific REGEXP 
+	 */
 	filter(obj: Dico, rules: RecordFilter[]): Dico {
 		const result: Dico = {};
 

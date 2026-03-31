@@ -18,15 +18,17 @@ export class ArgsManager {
 	/// API method to use to translate (Gemini, Google Translate)
 	api: Method;
 	// Enable logs
-	l: Boolean;
+	log: Boolean;
 	// Enable verbose
-	v: Boolean;
+	verbose: Boolean;
 	// Enable DryRun (do not do any API calls)
-	d: Boolean;
+	dryRun: Boolean;
 	// Override and retranslate already translated keys in the target file 
-	o: Boolean;
+	override: Boolean;
 	// Skip cache checking
-	c: Boolean;
+	skipCache: Boolean;
+	// Skip split string according to punctuation
+	skipSplitStr: Boolean;
 
 	constructor() {
 		this.sourceLocale = Object.keys(LOCALES)[0] as keyof typeof LOCALES;
@@ -34,16 +36,21 @@ export class ArgsManager {
 		this.input = "";
 		this.output = "";
 		this.api = "UNDEFINED";
-		this.l = false;
-		this.v = false;
-		this.d = false;
-		this.o = false;
-		this.c = false;
+		this.log = false;
+		this.verbose = false;
+		this.dryRun = false;
+		this.override = false;
+		this.skipCache = false;
 		this.maxChar = 0;
+		this.skipSplitStr = false;
 	}
 
 	isObjectKey(key: string) {
 		return key in this;
+	}
+
+	private toCamelCase(str: string): string {
+		return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
 	}
 
 	decode() {
@@ -57,9 +64,8 @@ export class ArgsManager {
 
 			// flags
 			else if (arg.startsWith("-")) {
-				arg.slice(1).split("").forEach(flag => {
-					args[flag] = true;
-				});
+				const flag = arg.slice(1);
+				args[flag] = true;
 			}
 
 			return args;
@@ -68,8 +74,11 @@ export class ArgsManager {
 
 		// Assign the decoded args to the object attributes
 		Object.entries(processedArgs).forEach(([key, value]) => {
-			if (this.isObjectKey(key))
-				this[key as keyof typeof this] = value as any;
+			const camelCase = this.toCamelCase(key);
+
+			console.log(key, camelCase);
+			if (this.isObjectKey(camelCase))
+				this[camelCase as keyof typeof this] = value as any;
 		});
 	}
 
@@ -143,34 +152,15 @@ export class ArgsManager {
 			["Output"]: this.output,
 			["API"]: this.api,
 			["Characters Limit"]: this.maxChar,
-			["Logs"]: this.l,
-			["Verbose"]: this.v,
-			["Dry Run"]: this.d,
-			["Override"]: this.o,
-			["Skip Cache"]: this.c,
+			["Logs"]: this.log,
+			["Verbose"]: this.verbose,
+			["Dry Run"]: this.dryRun,
+			["Override"]: this.override,
+			["Skip Cache"]: this.skipCache,
+			["Skip Split String"]: this.skipSplitStr,
 		});
 
 	}
 
-
-	get log() {
-		return this.l;
-	}
-
-	get verbose() {
-		return this.v;
-	}
-
-	get dryRun() {
-		return this.d
-	}
-
-	get override() {
-		return this.o;
-	}
-
-	get skipCache() {
-		return this.c;
-	}
 
 }

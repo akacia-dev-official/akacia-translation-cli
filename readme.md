@@ -59,17 +59,18 @@ npm run start -- \
 
 | Argument | Description |
 |--------|--------|
-| --sourceLocale | source locale (**BCP 47 format**, e.g. `en-US`, `fr-FR`, `zh-TW`) default is `en-US` |
-| --targetLocale | Target locale (**BCP 47 format**, e.g. `en-US`, `fr-FR`, `zh-TW`) default is `en-US` |
+| --source-locale | source locale (**BCP 47 format**, e.g. `en-US`, `fr-FR`, `zh-TW`) default is `en-US` |
+| --target-locale | Target locale (**BCP 47 format**, e.g. `en-US`, `fr-FR`, `zh-TW`) default is `en-US` |
 | --input | Path to JSON file or directory to translate |
 | --output | Output directory (created if missing) |
-| --maxchar | Character translation limit (`0` = unlimited) |
+| --max-char | Character translation limit (`0` = unlimited) |
 | --api | Translation provider (`GEMINI`, `GOOGLE_CLOUD`, `DEEPL`, `LIBRE_TRANSLATE`) |
-| -l | Enable logs |
-| -v | Verbose output |
-| -d | Dry run (no API calls) |
-| -o | Override already translated values |
-| -c | Skip cache checking |
+| -log | Enable logs |
+| -verbose | Verbose output |
+| -dry-run | Dry run (no API calls) |
+| -override | Override already translated values |
+| -skip-cache | Skip cache checking |
+| -skip-str-split | Skip splitting string into smaller chunks based on their punctuation. |
 
 ---
 

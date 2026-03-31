@@ -13,7 +13,15 @@ export const REGEXP_HTML_DATA = /^data-[a-z0-9_-]+$/i; // data-something
 export const REGEXP_CONSTANT = /^[A-Z0-9_\s-]+$/; // CONSTANTS
 export const REGEXP_PROTECTED_ONLY = /^\[\[.*\]\]$/; // [[value]]
 export const REGEXP_PROTECTED = /\[\[(.*?)\]\]/g; // ... [[value]] ...
-export const REGEXP_VARIABLE = /\{.*?\}/g; // ... {variable} ... 
+export const REGEXP_VARIABLE = /\{.*?\}/g; // ... {variable} ...
+
+export const REGEXP_SPACE = /\s+/g;
+export const REGEXP_PUNCTUATION = /[.,\/#!$%\^&\*;:{}=\-`~()?"']/g;
+export const REGEXP_SPLIT_STRONG_PUNCTUATION = /(?<=[.!?])\s+|\n+/;
+export const REGEXP_SPLIT_WEAK_PUNCTUATION = /(?<=[,;:])\s+/;
+export const REGEX_STRING_INDEX = /(.*)#(\d+)$/; // mystring#0
+export const SPLIT_COMMA_LENGTH_LIMIT = 120;
+export const SPLIT_STRING_MIN_LENGTH = 40;
 
 
 export const TRANSLATION_FILTERS: RecordFilter[] = [
@@ -27,8 +35,8 @@ export const TRANSLATION_FILTERS: RecordFilter[] = [
 	{ type: "LIST", rule: JSON_KEY_BLACKLIST, target: "KEY" }
 ];
 
-export const KEY_SPLIT_CHAR = "/";
-
+export const KEY_SPLIT_LEVEL = "/";
+export const KEY_SPLIT_STRING = "#";
 
 export const LOCALES = {
 	"en-US": { language: "English", region: "United States" },

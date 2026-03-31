@@ -1,13 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
-import {
-	BATCH_SIZE,
-	REGEXP_PROTECTED,
-	REGEXP_VARIABLE,
-	TRANSLATION_FILTERS,
-} from "./constants";
+import { BATCH_SIZE } from "./constants";
 import { Cache } from "./cache";
-import { JSONProcessor, } from "./json-processor";
+import { JSON_PROCESSOR_NO_PREFIX, JSONProcessor, } from "./json-processor";
 import { APIManager } from "./manager/api-manager";
 import { Logger } from "./logger";
 import { Dico } from "./types";
@@ -18,10 +13,12 @@ import { Timer } from "./timer";
 import dotenv from "dotenv";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { BatchManager } from "./manager/batch-manager";
 
 
 const cache = new Cache();
 const apiManager = new APIManager();
+const batchManager = new BatchManager({ batchSize: BATCH_SIZE });
 const jsonProcessor = new JSONProcessor();
 const logger = new Logger();
 const args = new ArgsManager();
@@ -30,68 +27,30 @@ const timer = new Timer();
 dotenv.config();
 
 
-/**
-* Filter out the (flattened) keys that already exists so we don't translate them twice.
-*/
-function prepareBatch(flatSource: Dico, flatTarget: Dico, cache?: Cache, override: Boolean = false) {
-
-	const filteredSource = jsonProcessor.filter(flatSource, TRANSLATION_FILTERS);
-
-	let missingKeys = Object.keys(filteredSource);
-
-	// Remove already translated key (already existing in the target file)
-	if (!override)
-		missingKeys = Object.keys(filteredSource).filter((k) => {
-			const value = flatTarget[k as keyof typeof flatTarget];
-			return !value || typeof value === "string" && value.trim() === "";
-		});
-
-	const toTranslate: Dico = {};
-
-	// Prepare the batching array by ensuring source text is not already cached.
-	for (const key of missingKeys) {
-
-		const value = filteredSource[key as keyof typeof filteredSource];
-
-		// continue is exists in cache
-		if (cache) {
-			const cachedValue = cache.find(args.targetLocale, String(value));
-			if (cachedValue) {
-				flatTarget[key as keyof typeof flatTarget] = cachedValue;
-				continue;
-			}
-		}
-
-		const protectedText = typeof value === "string" ? jsonProcessor.protectVariables(value, [REGEXP_VARIABLE, REGEXP_PROTECTED]) : value;
-
-		// add it th the batch list
-		toTranslate[key] = protectedText;
-	}
-
-	return toTranslate;
-
-}
-
-
-
 async function translateBatch(
 	{ toTranslate, flatTarget, cache, }:
 		{ toTranslate: Dico, flatTarget: Dico, cache?: Cache }, args: ArgsManager) {
 
 	const keys = Object.keys(toTranslate);
-	for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+	const { batchSize } = batchManager;
 
-		const batchKeys = keys.slice(i, i + BATCH_SIZE);
+	for (let i = 0; i < keys.length; i += batchSize) {
+
+		const verboseBatchOutput: Dico = {};
+		if (args.verbose)
+			console.log(`Batch ${i / batchSize}:`);
+
+		const batchKeys = keys.slice(i, i + batchSize);
 
 		// get the batch of values to translate
-		const batchValues = batchKeys.map(k => toTranslate[k]) as string[];
+		const batchValues = batchKeys.map(k => {
+			const value = toTranslate[k];
+			verboseBatchOutput[k] = value;
+			return value;
+		}) as string[];
 
-		// if Dry Run Mode, don't do any API call and output batch keys.
-		if (args.dryRun) {
-			console.log(`Batch ${i}:\n ${batchValues}`);
-			continue;
-		}
-
+		if (args.verbose)
+			console.table(verboseBatchOutput);
 
 		// call API with batch of strings
 		const translated = await apiManager.call(args.api, batchValues, args.targetLocale, args.maxChar);
@@ -128,7 +87,7 @@ async function processLocale(file: string, args: ArgsManager) {
 	if (!sourceJson)
 		return console.error(`Unable to read the source file: "${file}". Skipping.`);
 
-	const flatSource = jsonProcessor.flatten(sourceJson);
+	const flatSource = jsonProcessor.flatten(sourceJson, JSON_PROCESSOR_NO_PREFIX, args.skipSplitStr);
 
 	// Get target file and flatten it
 	const targetPath = await getTargetPath(file, args);
@@ -137,12 +96,20 @@ async function processLocale(file: string, args: ArgsManager) {
 	if (!targetJson)
 		return console.error(`Unable to read the target file: "${targetPath}". Skipping.`);
 
-	const flatTarget = jsonProcessor.flatten(targetJson);
+	const flatTarget = jsonProcessor.flatten(targetJson, JSON_PROCESSOR_NO_PREFIX, args.skipSplitStr);
 
 	if (!args.skipCache)
 		await cache.load(args.targetLocale);
 
-	const toTranslate = prepareBatch(flatSource, flatTarget, args.skipCache ? undefined : cache, args.override);
+	const toTranslate = batchManager.run(flatSource, flatTarget, args.targetLocale, jsonProcessor, args.skipCache ? undefined : cache, args.override);
+
+
+	// if Dry Run Mode, don't do any API call and output batch keys.
+	if (args.dryRun) {
+		console.log("Translation list:");
+		console.table(toTranslate)
+		return;
+	}
 
 	await translateBatch({
 		toTranslate,

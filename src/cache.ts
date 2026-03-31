@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 
-import { CACHE_FOLDER } from "./constants";
+import { CACHE_FOLDER, REGEXP_PUNCTUATION, REGEXP_SPACE } from "./constants";
 import { readOrCreateFile } from "./utils";
 
 export class Cache {
@@ -14,14 +14,21 @@ export class Cache {
 		this.catalog[locale] = await readOrCreateFile(file);
 	}
 
-	insert(locale: string, key: string, value: string) {
+	/**
+	 * Sanitize caches key by removing punctuations
+	 */
+	private sanitize(value: string) {
+		// 2. remove punctuation
+		value = value.replace(REGEXP_PUNCTUATION, "");
+		return value;
+	}
 
-		console.log(value);
-		this.catalog[locale][key] = value;
+	insert(locale: string, key: string, value: string) {
+		this.catalog[locale][this.sanitize(key)] = value;
 	}
 
 	find(locale: string, key: string): string | null {
-		const found = this.catalog[locale][key];
+		const found = this.catalog[locale][this.sanitize(key)];
 
 		if (found)
 			this.#hit[key] = found;
