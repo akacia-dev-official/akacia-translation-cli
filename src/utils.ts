@@ -1,5 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
+import { ArgsManager } from "./args";
+import { JSONProcessorSplitStringType } from "./json-processor";
 
 /**
 	Traverse a directory and subdir and return an array of all the JSON files
@@ -74,4 +76,32 @@ export async function readOrCreateFile(filename: string) {
 
 export function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Returns the split string method according to arguments
+ *
+ * In arguments we can basically :
+ *
+ * 1. Not skip the string split process by not declaring any flag (default behavior),
+ *    in which case the strings will be split by all type of punctuations (strong and weak)
+ *
+ * 2. Skipping entierly the string split sprocess with the flag -skip-split-str
+ *
+ * 3. Skipping split string only for weak punctuation with the flag -skip-split-str-weak,
+ *    this will giver higher context to API for eventual better translation.
+ *
+ */
+export function getSplitStringTypeFromArgs(args: ArgsManager): JSONProcessorSplitStringType {
+
+	let splitStringType: JSONProcessorSplitStringType = "ALL"; // by default split with all punctuation
+
+	if (args.skipSplitStr)
+		splitStringType = "NONE"; // entierly skip split string process
+
+	else if (args.skipSplitStrWeak)
+		splitStringType = "STRONG"; // only split string according to strong punctuation
+  
+	return splitStringType;
+
 }

@@ -7,7 +7,7 @@
 		"start": "tsx src/index.ts",
 		"libre": "pipenv run libretranslate --load-only en,fr,zt,ms --host 127.0.0.1 --port 5000",
 		"example": "tsx src/index.ts -log --input=./example/article/en-US/ --output=./example/article/",
-		"benchmark": "tsx src/index.ts -log -skip-cache -verbose -override --input=./example/benchmark/16384/en-US/ --output=./example/benchmark/16384/",
+		"benchmark": "tsx src/index.ts -log -skip-cache -verbose -override --input=./example/benchmark/1024/en-US/ --output=./example/benchmark/1024/",
 		"batch": "tsx src/index.ts -log -dry-run -verbose -skip-cache -override --target-locale=zh-TW --input=./example/batch/en-US/ --output=./example/batch/"
 	},
 	"author": "Nassim El Khantour",

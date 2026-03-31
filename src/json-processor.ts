@@ -11,25 +11,56 @@ import { Dico, RecordFilter } from "./types";
 
 export const JSON_PROCESSOR_NO_PREFIX = "";
 
+export type JSONProcessorSplitStringType = "NONE" | "ALL" | "STRONG";
+
 export class JSONProcessor {
 
 	varsMap: string[][] = [];
 
 
-	splitString(text: string): string[] {
-		return text
-			.split(REGEXP_SPLIT_STRONG_PUNCTUATION) // split strong punctuation + newline
-			.flatMap(sentence => {
+	/**
+	 * In arguments we can choose between 3 kinds of string splitting methdods :
+	 * String splitting is required to prevent sending huge chunk of text to the api, instead
+	 * we split the paragraph either via strong punctuation (. ! ?), weak punctuation (, : ;).
+	 * Although weak punctuation provide a better cache usage with smaller chunks of text,
+	 * it may lead to loss of context, so we still give the option to only split by strong punctuation 
+	 * in case weak-splitting leads to too much granularity and harm API output quality. 
+	 *
+	 * 1. Not skip the string split process by not declaring any flag (default behavior),
+	 *    in which case the strings will be split by all type of punctuations (strong and weak)
+	 *
+	 * 2. Skipping entierly the string split sprocess with the flag -skip-split-str
+	 *
+	 * 3. Skipping split string only for weak punctuation with the flag -skip-split-str-weak,
+	 *    this will giver higher context to API for eventual better translation.
+	 */
+	private splitString(
+		text: string,
+		type: JSONProcessorSplitStringType = "NONE"
+	): string[] {
+
+		if (type === "NONE")
+			return [text];
+
+		let splitText: string[] = [];
+
+		// if strong or all, split with strong punctuation
+		if (type === "STRONG" || type === "ALL")
+			splitText = text.split(REGEXP_SPLIT_STRONG_PUNCTUATION); // split strong punctuation + newline
+
+		// if all, then split with weak punctuation as well 
+		if (type === "ALL") {
+			splitText = splitText.flatMap(sentence => {
 				// split long sentences by comma
 				if (sentence.length > SPLIT_COMMA_LENGTH_LIMIT)
 					return sentence.split(REGEXP_SPLIT_WEAK_PUNCTUATION);
 
 				return [sentence];
-			})
-			.map(s => s.trim())
-			.filter(Boolean);
-	}
+			});
+		}
 
+		return splitText.map(s => s.trim()).filter(Boolean);
+	}
 	/**
 	 * Flatten the json structure:
 	 *
@@ -55,7 +86,7 @@ export class JSONProcessor {
 	 *
 	 *
 	 */
-	flatten(obj: any, prefix = JSON_PROCESSOR_NO_PREFIX, skipSplitString: Boolean = false, res: Record<string, string | number> = {}) {
+	flatten(obj: any, prefix = JSON_PROCESSOR_NO_PREFIX, splitStringType: JSONProcessorSplitStringType = "NONE", res: Record<string, string | number> = {}) {
 
 		for (const key in obj) {
 			const value = obj[key];
@@ -63,9 +94,9 @@ export class JSONProcessor {
 
 			if (value && typeof value === "object") {
 
-				this.flatten(value, newKey, skipSplitString, res);
+				this.flatten(value, newKey, splitStringType, res);
 
-			} else if (value && typeof value == "string" && !skipSplitString) {
+			} else if (value && typeof value == "string" && splitStringType != "NONE") {
 
 				// Avoid splitting short string
 				if (value.length < SPLIT_STRING_MIN_LENGTH) {
@@ -73,7 +104,7 @@ export class JSONProcessor {
 					continue;
 				}
 
-				const segments = this.splitString(value);
+				const segments = this.splitString(value, splitStringType);
 
 				if (segments.length === 1) {
 					res[newKey] = value;

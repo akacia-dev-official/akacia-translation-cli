@@ -2,11 +2,11 @@ import fs from "fs/promises";
 import path from "path";
 import { BATCH_SIZE } from "./constants";
 import { Cache } from "./cache";
-import { JSON_PROCESSOR_NO_PREFIX, JSONProcessor, } from "./json-processor";
+import { JSON_PROCESSOR_NO_PREFIX, JSONProcessor, JSONProcessorSplitStringType, } from "./json-processor";
 import { APIManager } from "./manager/api-manager";
 import { Logger } from "./logger";
 import { Dico } from "./types";
-import { getJsonFiles, getTargetPath, readOrCreateFile } from "./utils";
+import { getJsonFiles, getSplitStringTypeFromArgs, getTargetPath, readOrCreateFile } from "./utils";
 import { ArgsManager } from "./args";
 import { Timer } from "./timer";
 
@@ -87,7 +87,9 @@ async function processLocale(file: string, args: ArgsManager) {
 	if (!sourceJson)
 		return console.error(`Unable to read the source file: "${file}". Skipping.`);
 
-	const flatSource = jsonProcessor.flatten(sourceJson, JSON_PROCESSOR_NO_PREFIX, args.skipSplitStr);
+	const splitStringType = getSplitStringTypeFromArgs(args);
+
+	const flatSource = jsonProcessor.flatten(sourceJson, JSON_PROCESSOR_NO_PREFIX, splitStringType);
 
 	// Get target file and flatten it
 	const targetPath = await getTargetPath(file, args);
@@ -96,7 +98,7 @@ async function processLocale(file: string, args: ArgsManager) {
 	if (!targetJson)
 		return console.error(`Unable to read the target file: "${targetPath}". Skipping.`);
 
-	const flatTarget = jsonProcessor.flatten(targetJson, JSON_PROCESSOR_NO_PREFIX, args.skipSplitStr);
+	const flatTarget = jsonProcessor.flatten(targetJson, JSON_PROCESSOR_NO_PREFIX, splitStringType);
 
 	if (!args.skipCache)
 		await cache.load(args.targetLocale);
