@@ -5,6 +5,16 @@ const MAX_ATTEMPT = 5;
 const ERROR_CODE_UNAVAILABLE = 503;
 const ERROR_CODE_EXPIRED_QUOTA = 429;
 
+
+/**
+ * Call Gemini API to translate 
+ *
+ * @param locale - The target locale to translate to
+ * @param strings - The array of strings to translate
+ * @param attempt - The number of attempt we tried to reach the API
+ * @returns The translated array of strings
+ * 
+ */
 export async function Gemini(locale: string, strings: string[], attempt: number = 1): Promise<string[]> {
 
 	if (!process.env.GEMINI_API_KEY)

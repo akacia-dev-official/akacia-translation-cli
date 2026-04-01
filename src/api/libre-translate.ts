@@ -3,8 +3,10 @@ import { spawn } from "child_process";
 
 const LIBRE_TRANSLATE_LOADED_LOCALES = ["en", "fr", "zt", "th"] as const;
 
-// Map standard locales to LibreTranslate format (the tricky one it zh-TW which doesn't simply become zh but zt)
-// See: https://docs.libretranslate.com/guides/supported_languages/
+/**
+ * Map standard locales to LibreTranslate format (the tricky one it zh-TW which doesn't simply become zh but zt)
+ * @see: https://docs.libretranslate.com/guides/supported_languages/
+ */
 const LIBRE_TRANSLATE_LOCALES_MAP: Partial<Record<keyof typeof LOCALES, typeof LIBRE_TRANSLATE_LOADED_LOCALES[number]>> = {
 	"en-US": "en",
 	"en-GB": "en",
@@ -16,8 +18,16 @@ const LIBRE_TRANSLATE_LOCALES_MAP: Partial<Record<keyof typeof LOCALES, typeof L
 	"th-TH": "th",
 };
 
+
 /**
-		Currently unsuned, have conflict with pipenv starting from within NodeJS shell environment
+ * Call the shell environment to start LibreTranslate local server
+ * @description (unsuned) Have conflict with pipenv starting from within NodeJS shell environment
+ *
+ * @param host - The local server host address
+ * @param port - The local server target port
+ * @param port - The list of locales to perload
+ * @returns The process onject
+ * 
  */
 async function startLibre(host: string, port: string, locales: readonly string[]) {
 	const args = [
@@ -47,6 +57,16 @@ async function startLibre(host: string, port: string, locales: readonly string[]
 	return proc; // optionally return the process if you want to kill it later
 }
 
+/**
+ * Loop and listen to see if LibreTranslate local server is started
+ * @description (unsuned) Have conflict with pipenv starting from within NodeJS shell environment
+ *
+ * @param url - The LibreTranslate local server url
+ * @param timeoutMs - How low until we reject (ms)
+ * @exception throw error if the delay reach the timeout
+ * @returns The resolved promise if the server call is successful or a new timeout promise if not  
+ * 
+ */
 async function waitForLibre(url: string, timeoutMs = 5000) {
 	const start = Date.now();
 
@@ -67,7 +87,14 @@ async function waitForLibre(url: string, timeoutMs = 5000) {
 
 
 /**
-	 Ensure the Libre Translate program is running by checking its running server URL
+ * Ensure the Libre Translate program is running by checking its running server URL
+ * @description Since Libre Translate server runs locally (npm run libre) we need to
+ * ensure the server is running before making any call.
+ *
+ * @param serverURL - The LibreTranslate local server url
+ * @returns True if the server is indeeed running, False if not
+ * @exception Throws error if the server is not running
+ * 
  */
 async function isLibreRunning(serverURL: string) {
 	try {
@@ -89,6 +116,16 @@ async function isLibreRunning(serverURL: string) {
 }
 
 
+
+/**
+ * Call LibreTranslate API to translate 
+ *
+ * @param locale - The target locale to translate to
+ * @param strings - The array of strings to translate
+ * @param _attempt - (unused) The number of attempt we tried to reach the API
+ * @returns The translated array of strings
+ * 
+ */
 export async function LibreTranslate(locale: string, strings: string[], _attempt: number = 1) {
 
 	// Libre Translate Config

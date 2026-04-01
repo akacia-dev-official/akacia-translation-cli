@@ -2,7 +2,10 @@ import * as deepl from 'deepl-node';
 import { LOCALES } from 'src/constants';
 
 
-// See: https://developers.deepl.com/docs/getting-started/supported-languages
+/**
+ * Remap the standard locales to DeepL locales format 
+ * @see: https://developers.deepl.com/docs/getting-started/supported-languages
+ */
 const DEEPL_LOCALES_MAP: Partial<Record<keyof typeof LOCALES, deepl.TargetLanguageCode>> = {
 	"en-US": "en-US",
 	"en-GB": "en-GB",
@@ -15,7 +18,15 @@ const DEEPL_LOCALES_MAP: Partial<Record<keyof typeof LOCALES, deepl.TargetLangua
 }
 
 
-
+/**
+ * Call DeepL API to translate 
+ *
+ * @param locale - The target locale to translate to
+ * @param strings - The array of strings to translate
+ * @param _attempt - (unused) The number of attempt we tried to reach the API
+ * @returns The translated array of strings
+ * 
+ */
 export async function Deepl(locale: string, strings: string[], _attempt: number = 1): Promise<string[]> {
 
 	if (!process.env.DEEPL_API_KEY)
