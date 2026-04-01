@@ -33,6 +33,11 @@ export class JSONProcessor {
 	 *
 	 * 3. Skipping split string only for weak punctuation with the flag -skip-split-str-weak,
 	 *    this will giver higher context to API for eventual better translation.
+	 *
+	 *  [26/03/31] After testing, splitting fron strong + weak puncuation harms too much the translation result.
+	 *  As a result it's been decided to not keep split string as default, even from strong punctuation as I believe
+	 *  it's impact on cache usage is actually low since it would store relatively large sentences with very low reusability.
+	 *
 	 */
 	private splitString(
 		text: string,
@@ -241,7 +246,7 @@ export class JSONProcessor {
 				// Skip duplicate matches already replaced
 				if (!vars.includes(match)) {
 					vars.push(match);
-					return `__VAR_${i++}__`;
+				  return `_V${i++}_`;
 				}
 				return match;
 			});
@@ -259,7 +264,7 @@ export class JSONProcessor {
 		let restored = text;
 
 		this.varsMap[keyIndex].forEach((v, i) => {
-			restored = restored.replace(`__VAR_${i}__`, v);
+			restored = restored.replace(`_V${i}_`, v);
 		});
 
 		return restored;
@@ -289,6 +294,11 @@ export class JSONProcessor {
 
 					case "REGEXP":
 						if (typeof tg === "string" && rule.test(tg)) skip = true;
+						break;
+
+					//TODO: test below rule discriminator (LIST)
+					case "LIST":
+						if (typeof tg === "string" && rule.includes(tg)) skip = true;
 						break;
 				}
 
