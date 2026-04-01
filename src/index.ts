@@ -24,7 +24,15 @@ const timer = new Timer();
 
 dotenv.config();
 
-
+/**
+ * Split translation object into group and translate them 
+ * @description Create batches out of the translation object, send them to the API and cache the result
+ *
+ * @param toTranslate - The object to translate, not that the object shall be flattened to 1 level 
+ * @param flatTarget - The target object from which the translation will be appened to
+ * @param catch - The cache record to append the result to
+ * 
+ */
 async function translateBatch(
 	{ toTranslate, flatTarget, cache, }:
 		{ toTranslate: Dico, flatTarget: Dico, cache?: Cache }, args: ArgsManager) {
@@ -71,6 +79,13 @@ async function translateBatch(
 
 }
 
+/**
+ * Read a specific file and translate its content 
+ *
+ * @param file - The JSON file to translate
+ * @param args - The configuration inherited from the command line arguments, see ArgsManager class for more detail
+ * 
+ */
 async function processLocale(file: string, args: ArgsManager) {
 
 	console.log(`Processing file ${file}...`);
@@ -128,7 +143,9 @@ async function processLocale(file: string, args: ArgsManager) {
 }
 
 
-
+/**
+ * Process and validate command line arguments before starting the translation process
+ */
 async function main() {
 
 
