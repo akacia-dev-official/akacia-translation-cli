@@ -1,4 +1,4 @@
-# Translator API Toolkit
+# Translator API CLI
 
 A **Node.js / TypeScript CLI tool** to batch translate **JSON files or directories** using predefined translation APIs.
 
